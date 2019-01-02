@@ -4,59 +4,81 @@ using UnityEngine;
 
 public class Genome : MonoBehaviour
 {
-
-    public enum MoveDirection { LEFT, RIGHT, JUMP }
-    public MoveDirection currentDir;
+    public bool hasReachTarget = false;
+    public bool hasLostTarget = false;
     public float jumpForce = 2.0f;
+    public float fitness;
+    public int count = 0;
+    public int lifespan;
+    public DNA dna;
 
-    private DNA dna;
     private Rigidbody rb;
     private Vector3 jump;
     private Vector3 dir;
-    private float speed = 10f;
+    private Platform targetPlatform;
+    private float speed;
+    private float timer = 0.1f;
     private bool isGrounded = false;
 
     void Start()
     {
         //Testing if any direction work
-        jump = new Vector3(0f,0.7f,0f);
+        jumpForce = 2f;
+        lifespan = 300;
+        speed = 10f;
+        jump = new Vector3(0f,1.1f,0f);
         rb = GetComponent<Rigidbody>();
+
+        SetDNA();
         //SetRandomDirection();
     }
 
     void Update()
     {
-        Debug.DrawRay(transform.position, Vector3.right, Color.white);
-        MoveInputs();
-        CheckDirection();
+        CheckIfOnTrackToTarget();
     }
 
-    //Test method
-    /*private void SetRandomDirection()
+    void FixedUpdate()
     {
-        int range = Random.Range(0, 2);
 
-        switch (range)
+        RaycastHit hit;
+        // Does the ray intersect any objects excluding the player layer
+        if (Physics.Raycast(transform.position, -Vector3.up, out hit, 1f))
         {
-            case 0:
-                currentDir = MoveDirection.LEFT;
-                break;
-            case 1:
-                currentDir = MoveDirection.RIGHT;
-                break;
-            default:
-                break;
+            if (hit.collider.GetComponent<Platform>() != null)
+            {
+                isGrounded = true;
+            }
         }
-    }*/
+    }
 
     public void StartMoving()
     {
         SetDNA();
     }
 
-    private void SetDNA()
+    public void SetDNA(DNA newDNA = null)
     {
-        dna = GetComponent<DNA>();
+        if (newDNA != null)
+        {
+            dna = newDNA;
+        }
+        else
+        {
+            dna = new DNA(null);
+            dna.SetDirection();
+        }
+    }
+
+    private void CheckDNA()
+    {
+        timer -= Time.deltaTime;
+        count++;
+        if (timer < 0f && count < lifespan)
+        {
+            dna.SwitchDirection();
+            timer = 0.1f;
+        }
     }
 
     private void CheckDirection()
@@ -70,21 +92,6 @@ public class Genome : MonoBehaviour
     void MoveInputs()
     {
         dir = dna.GetDirectionValue();
-
-        /*if (currentDir == MoveDirection.LEFT)
-        {
-            dir = new Vector3(Random.Range(-0.1f, -0.3f), 0f, 0f);
-        }
-        else if (currentDir == MoveDirection.RIGHT)
-        {
-            dir = new Vector3(Random.Range(0.1f, 0.3f), 0f, 0f);
-        }
-        else if (currentDir == MoveDirection.JUMP)
-        {
-            //dir = new Vector3(0f,0.2f,0f);
-            Jump();
-        }*/
-
         transform.position += dir * speed * Time.deltaTime;      
     }
 
@@ -92,11 +99,6 @@ public class Genome : MonoBehaviour
     {
         rb.AddForce(jump * jumpForce, ForceMode.Impulse);
         isGrounded = false;
-    }
-
-    private void OnCollisionStay(Collision collision)
-    {
-        isGrounded = true;
     }
 
     public void IgnoreColliders(List<Genome> genomes)
@@ -107,10 +109,51 @@ public class Genome : MonoBehaviour
         }
     }
 
-    //le fitness rate dans ce cas ci
-    //serait le plus proche que le character peut arrivé du goal
-    public void FitnessRate()
+    public void SetTargetPlatform(Platform targetPlatform)
     {
-
+        this.targetPlatform = targetPlatform;
     }
-}
+
+    public void CalculateFitness()
+    {
+        if (targetPlatform == null)
+        {
+            return;
+        }
+
+        float dist = Vector3.Distance(transform.position, targetPlatform.GetPos());
+        fitness = 1 / dist;
+        Debug.Log("Genome original fitness" + fitness);
+
+        if (hasReachTarget)
+        {
+            fitness *= 10;
+        }
+
+        if (hasLostTarget)
+        {
+            fitness /= 10;
+        }
+    }
+
+    public void CheckIfOnTrackToTarget()
+    {
+        float dist = Vector3.Distance(transform.position, targetPlatform.GetPos());
+        if (dist < 2)
+        {
+            hasReachTarget = true;
+        }
+
+        if(transform.position.x < -2 || transform.position.y < -10)
+        {
+            hasLostTarget = true;
+        }
+
+        if (!hasReachTarget && !hasLostTarget)
+        {
+            CheckDNA();
+            MoveInputs();
+            CheckDirection();
+        }
+    }
+}   

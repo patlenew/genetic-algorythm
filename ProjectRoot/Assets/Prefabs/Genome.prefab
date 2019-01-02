@@ -82,8 +82,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0dbdc6d210b5e904ead5820a8685b743, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  currentDir: 1
+  hasReachTarget: 0
+  hasLostTarget: 0
   jumpForce: 2
+  fitness: 0
+  count: 0
+  lifespan: 0
+  dna:
+    currentDir: 0
+    directions: 
+    lifespan: 0
 --- !u!114 &114356750333927882
 MonoBehaviour:
   m_ObjectHideFlags: 1

@@ -1,48 +1,65 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class DNA : MonoBehaviour {
+[System.Serializable]
+public class DNA {
 
     public enum MoveDirection { LEFT, RIGHT, JUMP }
     public MoveDirection currentDir;
-    public List<MoveDirection> directions = new List<MoveDirection>();
-    public int count = 0;
-    public int lifespan = 200;
+    public MoveDirection[] directions;
+    public int lifespan;
     private int currentIndex;
     private float timer = 0.1f;
     private Vector3 dir;
 
 
-    void Start () {
-        SetDirection();
-    }
-	
-	void Update () {
-        timer -= Time.deltaTime;
-        count++;
-        if (timer < 0f && count < lifespan)
-        {
-            SwitchDirection();
-            timer = 0.1f;
-        }
-	}
-
-    private void SetDirection()
+    public DNA(MoveDirection[] directions)
     {
-        directions.Add(MoveDirection.LEFT);
-        directions.Add(MoveDirection.RIGHT);
-        directions.Add(MoveDirection.JUMP);
+        if (directions != null)
+        {
+            this.directions = directions;
+        }
+        lifespan = 300;
+        //SetDirection();
     }
 
-    private void SwitchDirection()
+    void Start() {
+        /*lifespan = 500;
+        speed = 10f;*/
+        //SetDirection();
+    }
+
+    void Update() {
+        /* timer -= Time.deltaTime;
+         count++;
+         if (timer < 0f && count < lifespan)
+         {
+             SwitchDirection();
+             timer = 0.1f;
+         }*/
+    }
+
+    public void SetDirection()
+    {
+        directions = new MoveDirection[lifespan];
+        for (int i = 0; i < directions.Length; i++)
+        {
+            System.Array A = System.Enum.GetValues(typeof(MoveDirection));
+            MoveDirection V = (MoveDirection)A.GetValue(UnityEngine.Random.Range(0, A.Length));
+            directions[i] = V;
+        }
+    }
+
+    public void SwitchDirection()
     {
         currentIndex++;
-        if (currentIndex > directions.Count - 1)
+
+        if (currentIndex > directions.Length)
         {
             currentIndex = 0;
         }
-
         currentDir = directions[currentIndex];
         SetDirectionVector();
     }
@@ -64,15 +81,37 @@ public class DNA : MonoBehaviour {
         return dir;
     }
 
-    /*public void SetDirection(Vector3 dir, Genome.MoveDirection direction)
+    public DNA Crossover(DNA partner)
     {
-        if (direction == Genome.MoveDirection.LEFT)
-        {
+        MoveDirection[] newDna = new MoveDirection[lifespan];
+        float mid = Mathf.Floor(UnityEngine.Random.Range(0, directions.Length));
 
-        }
-        else
+        for (int i = 0; i<directions.Length; i++)
         {
-
+            if (i > mid)
+            {
+                newDna[i] = directions[i];
+            }
+            else
+            {
+                newDna[i] = partner.directions[i];
+            }
         }
-    }*/
+
+        return new DNA(newDna);
+    }
+
+    public void Mutate()
+    {
+        for (int i = 0; i < directions.Length; i++)
+        {
+            int range = UnityEngine.Random.Range(0,2);
+            if (range == 0)
+            {
+                System.Array A = System.Enum.GetValues(typeof(MoveDirection));
+                MoveDirection V = (MoveDirection)A.GetValue(UnityEngine.Random.Range(0, A.Length));
+                directions[i] = V;
+            }
+        }
+    }
 }

@@ -16,4 +16,9 @@ public class Platform : MonoBehaviour {
 	void Update () {
 		
 	}
+
+    public Vector3 GetPos()
+    {
+        return transform.position;
+    }
 }
