@@ -30,19 +30,13 @@ public class Genome : MonoBehaviour
         rb = GetComponent<Rigidbody>();
 
         SetDNA();
-        //SetRandomDirection();
-    }
-
-    void Update()
-    {
-        CheckIfOnTrackToTarget();
     }
 
     void FixedUpdate()
     {
+        CheckIfOnTrackToTarget();
 
         RaycastHit hit;
-        // Does the ray intersect any objects excluding the player layer
         if (Physics.Raycast(transform.position, -Vector3.up, out hit, 1f))
         {
             if (hit.collider.GetComponent<Platform>() != null)
@@ -101,14 +95,6 @@ public class Genome : MonoBehaviour
         isGrounded = false;
     }
 
-    public void IgnoreColliders(List<Genome> genomes)
-    {
-        foreach (Genome genome in genomes)
-        {
-            Physics.IgnoreCollision(GetComponent<Collider>(), genome.GetComponent<Collider>());
-        }
-    }
-
     public void SetTargetPlatform(Platform targetPlatform)
     {
         this.targetPlatform = targetPlatform;
@@ -121,16 +107,16 @@ public class Genome : MonoBehaviour
             return;
         }
 
-        float dist = Vector3.Distance(transform.position, targetPlatform.GetPos());
-        fitness = 1 / dist;
-        Debug.Log("Genome original fitness" + fitness);
+        var dist = transform.position - targetPlatform.GetPos();
+        float magnetude = Vector3.Distance(transform.position, targetPlatform.GetPos());
+        fitness = 1 / magnetude;
 
         if (hasReachTarget)
         {
             fitness *= 10;
         }
 
-        if (hasLostTarget)
+        if (hasLostTarget || (dist.y < targetPlatform.GetPos().y))
         {
             fitness /= 10;
         }
@@ -139,12 +125,12 @@ public class Genome : MonoBehaviour
     public void CheckIfOnTrackToTarget()
     {
         float dist = Vector3.Distance(transform.position, targetPlatform.GetPos());
-        if (dist < 2)
+        if (dist < 3f)
         {
             hasReachTarget = true;
         }
 
-        if(transform.position.x < -2 || transform.position.y < -10)
+        if(transform.position.x < -2f || transform.position.y < -10f)
         {
             hasLostTarget = true;
         }

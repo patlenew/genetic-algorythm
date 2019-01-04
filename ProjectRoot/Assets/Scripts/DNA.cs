@@ -21,24 +21,7 @@ public class DNA {
         {
             this.directions = directions;
         }
-        lifespan = 300;
-        //SetDirection();
-    }
-
-    void Start() {
-        /*lifespan = 500;
-        speed = 10f;*/
-        //SetDirection();
-    }
-
-    void Update() {
-        /* timer -= Time.deltaTime;
-         count++;
-         if (timer < 0f && count < lifespan)
-         {
-             SwitchDirection();
-             timer = 0.1f;
-         }*/
+        lifespan = 750;
     }
 
     public void SetDirection()
@@ -105,8 +88,8 @@ public class DNA {
     {
         for (int i = 0; i < directions.Length; i++)
         {
-            int range = UnityEngine.Random.Range(0,2);
-            if (range == 0)
+            int range = UnityEngine.Random.Range(0,100);
+            if (range < 3)
             {
                 System.Array A = System.Enum.GetValues(typeof(MoveDirection));
                 MoveDirection V = (MoveDirection)A.GetValue(UnityEngine.Random.Range(0, A.Length));

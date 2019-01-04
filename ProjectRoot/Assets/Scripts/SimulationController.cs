@@ -12,12 +12,12 @@ public class SimulationController : MonoBehaviour
     [SerializeField] Genome newGenome;
     [SerializeField] Transform genomeSpawnLocation;
     [SerializeField] Transform genomeParent;
-    public List<Genome> currentGenomes = new List<Genome>();
-    public List<Genome> matingGenomePool = new List<Genome>();
 
-    public int populationSize = 10;
+    public int populationSize = 150;
     public int lifespan = 300;
 
+    private List<Genome> currentGenomes = new List<Genome>();
+    private List<Genome> matingGenomePool = new List<Genome>();
     private int count = 0;
     private bool isInit;
 
@@ -27,17 +27,15 @@ public class SimulationController : MonoBehaviour
         CreatePopulation();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         count++;
         if (count >= lifespan)
         {
             isInit = false;
-            //ResetPopulation();
-            //CreatePopulation();
             Evaluate();
             Selection();
-            SetIgnoreCollision();
+            InitPopulation();
             count = 0;
         }
     }
@@ -51,7 +49,7 @@ public class SimulationController : MonoBehaviour
             SetGenomeTargetPlatform(genome);
             currentGenomes.Add(genome);
         }
-        SetIgnoreCollision();
+        InitPopulation();
     }
 
     void SetGenomeTargetPlatform(Genome genome)
@@ -69,11 +67,11 @@ public class SimulationController : MonoBehaviour
         currentGenomes.Clear();
     }
 
-    void SetIgnoreCollision()
+    void InitPopulation()
     {
         foreach (Genome genome in currentGenomes)
         {
-            genome.IgnoreColliders(currentGenomes);
+            //genome.IgnoreColliders(currentGenomes);
             genome.StartMoving();
         }
 
@@ -98,17 +96,6 @@ public class SimulationController : MonoBehaviour
             genome.fitness /= maxFitness;
         }
 
-        matingGenomePool.Clear();
-        foreach (Genome genome in currentGenomes)
-        {
-            float n = genome.fitness * 100;
-            Debug.Log("fitness augment: " + n);
-            for (int i = 0; i<n; i++)
-            {
-                matingGenomePool.Add(genome);
-            }
-        }
-
         Debug.Log("Max fitness: " + maxFitness);
     }
 
@@ -119,22 +106,21 @@ public class SimulationController : MonoBehaviour
         List<Genome> newGenomeList = new List<Genome>(new Genome[currentGenomes.Count]);
         for(int i = 0; i<currentGenomes.Count; i++)
         {
-           /* DNA parentA = GetDNAByGoodFitness();
-            if (parentA == null)
+            DNA parentA = null;
+            DNA parentB = null;
+            DNA child = null;
+
+            if (i < 3)
             {
-                return;
+                child = matingGenomePool[i].dna;
             }
-
-            DNA parentB = GetDNAByGoodFitness();
-            if (parentB == null)
+            else
             {
-                return;
-            */
-
-            DNA parentA = matingGenomePool[Random.Range(0, matingGenomePool.Count)].dna;
-            DNA parentB = matingGenomePool[Random.Range(0, matingGenomePool.Count)].dna;
-            DNA child = parentA.Crossover(parentB);
-            child.Mutate();
+               parentA = matingGenomePool[Random.Range(0, matingGenomePool.Count)].dna;
+               parentB = matingGenomePool[Random.Range(0, matingGenomePool.Count)].dna;
+               child = parentA.Crossover(parentB);
+               child.Mutate();
+            }
 
             Genome genome = Instantiate(newGenome, genomeSpawnLocation.position, Quaternion.identity);
             genome.transform.SetParent(genomeParent);
@@ -147,25 +133,15 @@ public class SimulationController : MonoBehaviour
         currentGenomes = newGenomeList;
     }
 
-    /*DNA GetDNAByGoodFitness()
-    {
-        SortMatingPool();
-        for (int i = 0; i<matingGenomePool.Count; i++)
-        {
-            return matingGenomePool[i].dna;
-        }
-        return null;
-    }*/
-
     void SortMatingPool()
     {
-        matingGenomePool.Sort((x, y) => y.fitness.CompareTo(x.fitness));
-        List<Genome> newMatingList = new List<Genome>(50);
+        currentGenomes.Sort((x, y) => y.fitness.CompareTo(x.fitness));
+        List<Genome> newMatingList = new List<Genome>();
 
-        for (int i = 0; i<50; i++)
+        float pourcentage = currentGenomes.Count / 100 * 20;
+        for (int i = 0; i<(int)pourcentage; i++)
         {
-            newMatingList.Add(matingGenomePool[i]);
-            Debug.Log("Sorted fitness of pool: " + matingGenomePool[i].fitness);
+            newMatingList.Add(currentGenomes[i]);
         }
 
         matingGenomePool = newMatingList;
