@@ -3,6 +3,10 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+
+/// <summary>
+/// Not used for now, will maybe be eventually to show more details
+/// </summary>
 public class GenerationUI : MonoBehaviour {
 
     public Text timeTxt;

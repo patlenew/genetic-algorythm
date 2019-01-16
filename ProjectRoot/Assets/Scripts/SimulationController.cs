@@ -2,16 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SimulationController : MonoBehaviour
 {
     private static SimulationController instance;
     public static SimulationController GetInstance() { return instance; }
 
-    [SerializeField] Platform targetPlatform;
-    [SerializeField] Genome newGenome;
-    [SerializeField] Transform genomeSpawnLocation;
-    [SerializeField] Transform genomeParent;
+    [SerializeField] private Platform targetPlatform;
+    [SerializeField] private Genome newGenome;
+    [SerializeField] private Transform genomeSpawnLocation;
+    [SerializeField] private Transform genomeParent;
+    [SerializeField] private Text currentGenerationText;
 
     public int populationSize = 150;
     public int lifespan = 300;
@@ -19,6 +21,7 @@ public class SimulationController : MonoBehaviour
     private List<Genome> currentGenomes = new List<Genome>();
     private List<Genome> matingGenomePool = new List<Genome>();
     private int count = 0;
+    private int currentGenerationCount = 0;
     private bool isInit;
 
     void Start()
@@ -71,11 +74,12 @@ public class SimulationController : MonoBehaviour
     {
         foreach (Genome genome in currentGenomes)
         {
-            //genome.IgnoreColliders(currentGenomes);
             genome.StartMoving();
         }
 
         isInit = true;
+        currentGenerationCount++;
+        currentGenerationText.text = "Generation: " + currentGenerationCount.ToString();
     }
 
     void Evaluate()
